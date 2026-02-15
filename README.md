@@ -2,6 +2,8 @@
 
 Patches and instructions to compile **Node.js v18.20.4** from source on **macOS 10.13.6 (High Sierra)**.
 
+![Claude Code running on macOS High Sierra](claude-code-high-sierra.png)
+
 ## Motivation
 
 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) is Anthropic's CLI tool for working with Claude directly from the terminal. While the official installation method uses a standalone binary, it can also be installed via npm:
