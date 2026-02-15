@@ -1,0 +1,22 @@
+--- deps/v8/src/regexp/regexp-parser.cc	2024-07-08 15:27:51.000000000 +0200
++++ deps/v8/src/regexp/regexp-parser.cc	2026-02-15 11:49:20.000000000 +0100
+@@ -184,7 +184,7 @@
+ 
+ template <class CharT>
+ class RegExpParserImpl final {
+- private:
++ public:
+   RegExpParserImpl(const CharT* input, int input_length, RegExpFlags flags,
+                    uintptr_t stack_limit, Zone* zone,
+                    const DisallowGarbageCollection& no_gc);
+@@ -2355,8 +2355,8 @@
+                                       RegExpFlags flags,
+                                       RegExpCompileData* result,
+                                       const DisallowGarbageCollection& no_gc) {
+-  return RegExpParserImpl<CharT>{input,       input_length, flags,
+-                                 stack_limit, zone,         no_gc}
++  return RegExpParserImpl<CharT>(input,       input_length, flags,
++                                 stack_limit, zone,         no_gc)
+       .Parse(result);
+ }
+ 

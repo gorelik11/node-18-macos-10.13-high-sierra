@@ -1,0 +1,17 @@
+--- deps/simdutf/simdutf.gyp	2024-07-08 15:27:50.000000000 +0200
++++ deps/simdutf/simdutf.gyp	2026-02-01 20:52:33.000000000 +0100
+@@ -4,6 +4,14 @@
+       'target_name': 'simdutf',
+       'type': 'static_library',
+       'include_dirs': ['.'],
++'defines': [
++        'SIMDUTF_IMPLEMENTATION_ICELAKE=0',
++        'SIMDUTF_IMPLEMENTATION_HASWELL=0',
++        'SIMDUTF_IMPLEMENTATION_WESTMERE=0',
++        'SIMDUTF_IMPLEMENTATION_ARM64=0',
++        'SIMDUTF_IMPLEMENTATION_PPC64=0',
++        'SIMDUTF_IMPLEMENTATION_FALLBACK=1',
++      ],
+       'direct_dependent_settings': {
+         'include_dirs': ['.'],
+       },

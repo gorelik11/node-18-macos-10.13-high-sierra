@@ -1,0 +1,110 @@
+--- deps/ada/ada.cpp	2024-07-08 15:27:48.000000000 +0200
++++ deps/ada/ada.cpp	2026-02-01 21:03:19.000000000 +0100
+@@ -10422,7 +10422,7 @@
+ /* begin file src/helpers.cpp */
+ 
+ #include <algorithm>
+-#include <charconv>
++#include "charconv_polyfill.h"
+ #include <cstring>
+ #include <sstream>
+ 
+--- deps/ada/ada.h	2024-07-08 15:27:48.000000000 +0200
++++ deps/ada/ada.h	2026-02-01 21:06:25.000000000 +0100
+@@ -5143,7 +5143,7 @@
+ 
+ 
+ #include <algorithm>
+-#include <charconv>
++#include "charconv_polyfill.h"
+ #include <iostream>
+ #include <optional>
+ #include <string>
+--- deps/ada/charconv_polyfill.h.orig	2026-02-15 16:03:38.000000000 +0100
++++ deps/ada/charconv_polyfill.h	2026-02-01 21:03:07.000000000 +0100
+@@ -0,0 +1,85 @@
++// Minimal charconv polyfill for macOS 10.13
++#ifndef CHARCONV_POLYFILL_H
++#define CHARCONV_POLYFILL_H
++
++#include <cstdlib>
++#include <cstdio>
++#include <cerrno>
++#include <system_error>
++#include <limits>
++
++namespace std {
++
++struct from_chars_result {
++  const char* ptr;
++  errc ec;
++};
++
++struct to_chars_result {
++  char* ptr;
++  errc ec;
++};
++
++// from_chars for integers
++template<typename T>
++from_chars_result from_chars(const char* first, const char* last, T& value, int base = 10) {
++  if (first >= last) {
++    return {first, errc::invalid_argument};
++  }
++  
++  char* end;
++  errno = 0;
++  
++  long long result;
++  if (base == 16) {
++    result = strtoll(first, &end, 16);
++  } else if (base == 10) {
++    result = strtoll(first, &end, 10);
++  } else {
++    result = strtoll(first, &end, base);
++  }
++  
++  if (end == first) {
++    return {first, errc::invalid_argument};
++  }
++  if (end > last) {
++    end = const_cast<char*>(last);
++  }
++  if (errno == ERANGE || result < std::numeric_limits<T>::min() || result > std::numeric_limits<T>::max()) {
++    return {end, errc::result_out_of_range};
++  }
++  
++  value = static_cast<T>(result);
++  return {end, errc{}};
++}
++
++// to_chars for integers
++template<typename T>
++to_chars_result to_chars(char* first, char* last, T value, int base = 10) {
++  if (first >= last) {
++    return {last, errc::value_too_large};
++  }
++  
++  char buffer[32];
++  int written;
++  
++  if (base == 16) {
++    written = snprintf(buffer, sizeof(buffer), "%llx", (long long)value);
++  } else {
++    written = snprintf(buffer, sizeof(buffer), "%llu", (unsigned long long)value);
++  }
++  
++  if (written < 0 || first + written > last) {
++    return {last, errc::value_too_large};
++  }
++  
++  for (int i = 0; i < written; i++) {
++    first[i] = buffer[i];
++  }
++  
++  return {first + written, errc{}};
++}
++
++} // namespace std
++
++#endif // CHARCONV_POLYFILL_H
